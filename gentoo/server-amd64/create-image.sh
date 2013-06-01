@@ -106,7 +106,7 @@ emerge -a n genkernel dmraid logrotate syslog-ng monit app-admin/mcelog         
     sys-fs/sshfs-fuse sys-fs/xfsprogs sys-apps/hdparm sys-apps/iproute2            \
     sys-kernel/module-rebuild sys-apps/pv ddrescue gptfdisk lm_sensors             \
     sys-apps/lshw smartmontools sys-devel/gdb lsof vixie-cron lynx ntop            \
-    dmidecode dstat grub ethtool nload
+    dmidecode dstat grub ethtool nload pciutils
 
 (
     echo "" > /etc/udev/rules.d/80-net-name-slot.rules
