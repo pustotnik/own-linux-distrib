@@ -1,0 +1,1 @@
+Scripts for creation of livecd and installable image of Linux. Based on Gentoo Linux.
