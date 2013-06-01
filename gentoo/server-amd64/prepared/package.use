@@ -1,0 +1,5 @@
+app-admin/sysstat                 lm_sensors
+app-editors/vim                   -minimal
+app-portage/layman                git mercurial subversion
+media-gfx/imagemagick             graphviz
+media-libs/gd                     truetype jpeg png fontconfig

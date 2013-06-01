@@ -1,0 +1,8 @@
+syntax: regexp
+^gentoo/distfiles/.*
+^gentoo/livecd-amd64/source/.*
+^gentoo/livecd-amd64/target/.*
+^gentoo/server-amd64/image/.*
+stage3.+\.tar\.bz2$
+portage-latest\.tar\.xz$
+livecd.*\.iso$

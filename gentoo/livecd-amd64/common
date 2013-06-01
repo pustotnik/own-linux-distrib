@@ -1,0 +1,50 @@
+#!/bin/bash
+
+if [ "`id -u`" != 0 ]; then
+    echo "Run as root, exit"
+    exit 1
+fi
+
+# detect current directory
+BASEDIR=`dirname $0`
+BASEDIR=`(cd "$BASEDIR"; pwd)`
+
+LIVECD=${BASEDIR}
+PREPARED=${BASEDIR}/prepared
+TARGET=${LIVECD}/target
+TARGET_SOURCE=${TARGET}/source
+TARGET_SERVER_IMAGE_DIR=${TARGET_SOURCE}/files
+TARGET_SERVER_IMAGE=${TARGET_SERVER_IMAGE_DIR}/gentoo-server.tar.xz
+SOURCE=${LIVECD}/source
+SOURCE_DISTFILES=${SOURCE}/usr/portage/distfiles
+#SHARED_DISTFILES=/usr/portage/distfiles
+SHARED_DISTFILES=${BASEDIR}/../distfiles
+SOURCE_SERVER=${BASEDIR}/../server-amd64
+SOURCE_SERVERFILES=${SOURCE_SERVER}/image
+INSOURCE_PREPARED=/tmp/prepared
+LIVECD_ISO=${LIVECD}/gentoo-livecd-amd64.iso
+
+PV_PATH="`which pv 2>/dev/null`"
+
+mount_for_source ()
+{
+    mount --bind /proc    ${SOURCE}/proc
+    mount --bind /dev     ${SOURCE}/dev
+    mount --bind /dev/pts ${SOURCE}/dev/pts 
+    mount --bind /sys     ${SOURCE}/sys
+
+    [ -e ${SOURCE_DISTFILES} ] || mkdir -p ${SOURCE_DISTFILES}
+    [ -e ${SHARED_DISTFILES} ] || mkdir -p ${SHARED_DISTFILES}
+    
+    chmod u=rwX,g=rX,o=rX ${SHARED_DISTFILES}
+    mount --bind ${SHARED_DISTFILES} ${SOURCE_DISTFILES}
+}
+
+umount_for_source ()
+{
+    umount ${SOURCE}/proc
+    umount ${SOURCE}/sys
+    umount ${SOURCE}/dev/pts
+    umount ${SOURCE}/dev    
+    umount ${SOURCE_DISTFILES}
+}
