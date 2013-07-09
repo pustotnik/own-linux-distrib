@@ -83,8 +83,7 @@ cp -a ${INSOURCE_PREPARED}/package.use /etc/portage/package.use
 # see http://forums.gentoo.org/viewtopic-t-297935.html
 FEATURES="-sandbox" USE="multilib" emerge -a n gcc portage
 
-#emerge -a n sys-kernel/gentoo-sources
-emerge -a n =sys-kernel/gentoo-sources-3.6.11-r1
+emerge -a n sys-kernel/gentoo-sources
 
 emerge -a n -uDN world
 emerge -a n gentoolkit
