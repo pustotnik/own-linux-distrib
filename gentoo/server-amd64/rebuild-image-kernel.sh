@@ -25,11 +25,14 @@ env-update && source /etc/profile
 cat /proc/mounts > /etc/mtab
 CHROOTED
 
-chroot ${TARGET} /bin/bash -i -c "genkernel all --no-mountboot --menuconfig --disklabel --kernel-config=${INSOURCE_PREPARED}/kernel-config"
+chroot ${TARGET} /bin/bash -i -c "genkernel all --menuconfig --no-splash  --no-mountboot --lvm --mdadm --disklabel --firmware --kernel-config=${INSOURCE_PREPARED}/kernel-config"
+#chroot ${TARGET} /bin/bash -i -c "genkernel all --menuconfig --no-splash  --no-mountboot --disklabel --firmware --all-ramdisk-modules --kernel-config=${INSOURCE_PREPARED}/kernel-config"
+#chroot ${TARGET} /bin/bash -i -c "genkernel all --no-mountboot --menuconfig --disklabel --kernel-config=${INSOURCE_PREPARED}/kernel-config"
 
 chroot ${TARGET} /bin/bash --login <<CHROOTED
-module-rebuild populate
-module-rebuild rebuild
+#module-rebuild populate
+#module-rebuild rebuild
+emerge -a n @module-rebuild
 
 (
     cd /usr/src/linux 

@@ -28,10 +28,14 @@ PV_PATH="`which pv 2>/dev/null`"
 
 mount_for_source ()
 {
-    mount --bind /proc    ${SOURCE}/proc
-    mount --bind /dev     ${SOURCE}/dev
-    mount --bind /dev/pts ${SOURCE}/dev/pts 
-    mount --bind /sys     ${SOURCE}/sys
+    #mount --bind /proc    ${SOURCE}/proc
+    #mount --bind /dev     ${SOURCE}/dev
+    #mount --bind /dev/pts ${SOURCE}/dev/pts 
+    #mount --bind /sys     ${SOURCE}/sys
+    
+    mount -t proc proc    ${SOURCE}/proc
+    mount --rbind /sys    ${SOURCE}/sys
+    mount --rbind /dev    ${SOURCE}/dev
 
     [ -e ${SOURCE_DISTFILES} ] || mkdir -p ${SOURCE_DISTFILES}
     [ -e ${SHARED_DISTFILES} ] || mkdir -p ${SHARED_DISTFILES}
@@ -41,10 +45,15 @@ mount_for_source ()
 }
 
 umount_for_source ()
-{
-    umount ${SOURCE}/proc
-    umount ${SOURCE}/sys
-    umount ${SOURCE}/dev/pts
-    umount ${SOURCE}/dev    
+{  
+    #umount ${SOURCE}/proc
+    #umount ${SOURCE}/sys
+    #umount ${SOURCE}/dev/pts
+    #umount ${SOURCE}/dev    
+    
+    umount -l ${SOURCE}/sys
+    umount -l ${SOURCE}/dev{/shm,/pts,}
+    umount -l ${SOURCE}/proc
+    
     umount ${SOURCE_DISTFILES}
 }

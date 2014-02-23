@@ -62,7 +62,11 @@ cp -a /etc/resolv.conf  ${TARGET}/etc/resolv.conf
 mount_for_source
 
 chroot ${TARGET} /bin/bash --login <<CHROOTED   
-env-update && source /etc/profile 
+
+source /etc/profile 
+
+set -e
+
 # set the root password for the new environment in case of problems later   
 echo "root:1q2w3e" | chpasswd
 eselect profile set 1
@@ -76,9 +80,26 @@ python-updater -- -a n
 
 emerge -a n dev-util/ccache
 
-cp -a ${INSOURCE_PREPARED}/locale.gen  /etc/locale.gen
-cp -a ${INSOURCE_PREPARED}/make.conf   /etc/portage/make.conf
-cp -a ${INSOURCE_PREPARED}/package.use /etc/portage/package.use
+cp -a ${INSOURCE_PREPARED}/locale.gen     /etc/locale.gen
+cp -a ${INSOURCE_PREPARED}/make.conf      /etc/portage/make.conf
+cp -a ${INSOURCE_PREPARED}/package.use    /etc/portage/package.use
+
+cp -a ${INSOURCE_PREPARED}/localtime      /etc/localtime
+cp -a ${INSOURCE_PREPARED}/timezone       /etc/timezone
+cp -a ${INSOURCE_PREPARED}/hwclock        /etc/conf.d/hwclock
+cp -a ${INSOURCE_PREPARED}/hostname       /etc/conf.d/hostname
+cp -a ${INSOURCE_PREPARED}/rc.conf        /etc/rc.conf
+cp -a ${INSOURCE_PREPARED}/02locale       /etc/env.d/02locale
+cp -a ${INSOURCE_PREPARED}/99editor       /etc/env.d/99editor
+cp -a ${INSOURCE_PREPARED}/keymaps        /etc/conf.d/keymaps
+cp -a ${INSOURCE_PREPARED}/consolefont    /etc/conf.d/consolefont
+cp -a ${INSOURCE_PREPARED}/issue          /etc/issue
+cp -a ${INSOURCE_PREPARED}/genkernel.conf /etc/genkernel.conf
+
+cp -a ${INSOURCE_PREPARED}/locale.gen     /etc/locale.gen
+locale-gen
+
+env-update && source /etc/profile
 
 # see http://forums.gentoo.org/viewtopic-t-297935.html
 FEATURES="-sandbox" USE="multilib" emerge -a n gcc portage
@@ -88,10 +109,6 @@ emerge -a n sys-kernel/gentoo-sources
 emerge -a n -uDN world
 emerge -a n gentoolkit
 revdep-rebuild -- -a n
-
-#emerge -a n -1 gcc
-#emerge -a n -1 glibc
-#emerge -a n -e world --exclude glibc --exclude gcc
 
 emerge -a n genkernel dmraid logrotate syslog-ng monit app-admin/mcelog            \
     eix htop vim sudo mlocate app-arch/dpkg app-arch/lha app-arch/lzip             \
@@ -103,9 +120,9 @@ emerge -a n genkernel dmraid logrotate syslog-ng monit app-admin/mcelog         
     net-analyzer/traceroute net-misc/dhcpcd net-misc/netkit-telnetd                \
     net-misc/whois net-misc/ntp sys-block/parted sys-fs/reiserfsprogs              \
     sys-fs/sshfs-fuse sys-fs/xfsprogs sys-apps/hdparm sys-apps/iproute2            \
-    sys-kernel/module-rebuild sys-apps/pv ddrescue gptfdisk lm_sensors             \
+    sys-fs/dosfstools sys-apps/pv ddrescue gptfdisk lm_sensors mdadm               \
     sys-apps/lshw smartmontools sys-devel/gdb lsof vixie-cron lynx ntop            \
-    dmidecode dstat grub ethtool nload pciutils
+    dmidecode dstat grub:0 grub:2 ethtool nload
 
 (
     echo "" > /etc/udev/rules.d/80-net-name-slot.rules
@@ -117,32 +134,19 @@ emerge -a n genkernel dmraid logrotate syslog-ng monit app-admin/mcelog         
 # this need to remove unneeded updates of config files
 find /etc -name "._cfg*" -exec rm -f {} \;
 
-cp -a ${INSOURCE_PREPARED}/localtime     /etc/localtime
-cp -a ${INSOURCE_PREPARED}/timezone      /etc/timezone
-cp -a ${INSOURCE_PREPARED}/hwclock       /etc/conf.d/hwclock
-cp -a ${INSOURCE_PREPARED}/hostname      /etc/conf.d/hostname
-cp -a ${INSOURCE_PREPARED}/rc.conf       /etc/rc.conf
-cp -a ${INSOURCE_PREPARED}/02locale      /etc/env.d/02locale
-cp -a ${INSOURCE_PREPARED}/keymaps       /etc/conf.d/keymaps
-cp -a ${INSOURCE_PREPARED}/consolefont   /etc/conf.d/consolefont
-cp -a ${INSOURCE_PREPARED}/issue         /etc/issue
-
 chmod u+w /etc/sudoers
 rm -f /etc/sudoers
 cp -a ${INSOURCE_PREPARED}/sudoers       /etc/sudoers
 chmod u=r,g=r,o= /etc/sudoers
 
-cp -a ${INSOURCE_PREPARED}/locale.gen /etc/locale.gen
-locale-gen
-
-env-update && source /etc/profile
-
 cat /proc/mounts > /etc/mtab
 
+genkernel all --no-splash --no-mountboot --disklabel --lvm --mdadm --firmware --kernel-config=${INSOURCE_PREPARED}/kernel-config
 #genkernel all --no-mountboot --all-ramdisk-modules --disklabel --kernel-config=${INSOURCE_PREPARED}/kernel-config
-genkernel all --no-mountboot --disklabel --kernel-config=${INSOURCE_PREPARED}/kernel-config
-module-rebuild populate
-module-rebuild rebuild
+#genkernel all --no-splash --no-mountboot --disklabel --firmware --all-ramdisk-modules --kernel-config=${INSOURCE_PREPARED}/kernel-config
+#module-rebuild populate
+#module-rebuild rebuild
+emerge -a n @module-rebuild
 
 (
     cd /usr/src/linux 
@@ -162,13 +166,11 @@ echo '#!/bin/bash'                            >  /etc/cron.hourly/ntpupdate
 echo 'ntpdate pool.ntp.org  2>&1 > /dev/null' >> /etc/cron.hourly/ntpupdate
 chown root:root                                  /etc/cron.hourly/ntpupdate
 chmod u=rwx,g=rx,o=rx                            /etc/cron.hourly/ntpupdate
+/etc/cron.hourly/ntpupdate
 
-(
-    cd /etc
-    ln -s /etc/portage/make.conf make.conf
-)
+eselect news read all
 
-makewhatis -u
+#makewhatis -u
 eix-update
 
 echo "updatedb ..."

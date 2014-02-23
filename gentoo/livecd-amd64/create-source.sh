@@ -59,7 +59,11 @@ if ! [ -e ${SOURCE} ]; then
     mount_for_source
     
     chroot ${SOURCE} /bin/bash --login <<CHROOTED   
-    env-update && source /etc/profile 
+    
+    source /etc/profile 
+    
+    set -e
+    
     # set the root password for the new environment in case of problems later   
     echo "root:1q2w3e" | chpasswd
     eselect profile set 1
@@ -70,34 +74,6 @@ if ! [ -e ${SOURCE} ]; then
     cp -a ${INSOURCE_PREPARED}/make.conf    /etc/portage/make.conf
     cp -a ${INSOURCE_PREPARED}/package.use  /etc/portage/package.use
     cp -a ${INSOURCE_PREPARED}/fstab        /etc/fstab
-    cp -a ${INSOURCE_PREPARED}/locale.gen   /etc/locale.gen
-    
-    emerge sys-kernel/gentoo-sources
-    emerge -1 gcc
-    emerge -1 glibc
-    emerge -e system --exclude glibc --exclude gcc
-    emerge -e world --exclude glibc --exclude gcc
-    emerge memtest86+ localepurge genkernel gentoolkit dmraid livecd-tools     \
-        eix htop vim sudo mlocate app-arch/dpkg app-arch/lha app-arch/lzip     \
-        app-arch/rar app-misc/mc app-misc/screen net-fs/nfs-utils net-fs/samba \
-        net-dialup/ppp net-analyzer/netcat6 net-analyzer/tcpdump               \
-        net-analyzer/traceroute net-misc/dhcpcd net-misc/netkit-telnetd        \
-        net-misc/whois net-misc/ntp sys-block/parted sys-fs/reiserfsprogs      \
-        sys-fs/squashfs-tools sys-fs/sshfs-fuse sys-fs/xfsprogs                \
-        sys-kernel/module-rebuild sys-apps/pv ddrescue gptfdisk dmidecode      \
-        mdadm
-    
-    emerge scripts mingetty 
-    
-    #(
-    #    echo "" > /etc/udev/rules.d/80-net-name-slot.rules
-    #    cd /etc/init.d
-    #    ln -s net.lo net.eth0
-    #    rc-update add net.eth0 default
-    #)
-    
-    # this need to remove unneeded updates of config files
-    find /etc -name "._cfg*" -exec rm -f {} \;
     
     cp -a ${INSOURCE_PREPARED}/localtime     /etc/localtime
     cp -a ${INSOURCE_PREPARED}/hwclock       /etc/conf.d/hwclock
@@ -114,11 +90,42 @@ if ! [ -e ${SOURCE} ]; then
     
     env-update && source /etc/profile
     
+    emerge -a n sys-kernel/gentoo-sources
+    emerge -a n -1 gcc
+    emerge -a n -1 glibc
+    emerge -a n -uDN system
+    emerge -a n -uDN world
+    #emerge -a n -e system --exclude glibc --exclude gcc
+    #emerge -a n -e world --exclude glibc --exclude gcc
+    
+    emerge -a n memtest86+ localepurge genkernel gentoolkit dmraid livecd-tools     \
+        eix htop vim sudo mlocate app-arch/dpkg app-arch/lha app-arch/lzip     \
+        app-arch/rar app-misc/mc app-misc/screen net-fs/nfs-utils net-fs/samba \
+        net-dialup/ppp net-analyzer/netcat6 net-analyzer/tcpdump               \
+        net-analyzer/traceroute net-misc/dhcpcd net-misc/netkit-telnetd        \
+        net-misc/whois net-misc/ntp sys-block/parted sys-fs/reiserfsprogs      \
+        sys-fs/squashfs-tools sys-fs/sshfs-fuse sys-fs/xfsprogs                \
+        sys-fs/dosfstools sys-apps/pv ddrescue gptfdisk dmidecode              \
+        mdadm
+    
+    emerge -a n scripts mingetty 
+    
+    #(
+    #    echo "" > /etc/udev/rules.d/80-net-name-slot.rules
+    #    cd /etc/init.d
+    #    ln -s net.lo net.eth0
+    #    rc-update add net.eth0 default
+    #)
+    
+    # this need to remove unneeded updates of config files
+    find /etc -name "._cfg*" -exec rm -f {} \;
+    
     cat /proc/mounts > /etc/mtab
     
     genkernel all --no-splash --kernel-config=${INSOURCE_PREPARED}/kernel-config
-    module-rebuild populate
-    module-rebuild rebuild
+    #module-rebuild populate
+    #module-rebuild rebuild
+    emerge -a n @module-rebuild
     
     mv /boot/initramfs-genkernel-* /boot/initrd
     mv /boot/kernel-genkernel-* /boot/vmlinuz
@@ -127,7 +134,8 @@ if ! [ -e ${SOURCE} ]; then
         make clean
     )
     
-    emerge grub
+    emerge -a n grub:0
+    emerge -a n grub:2
     
     #rm /boot/grub/menu.lst
     cp -a ${INSOURCE_PREPARED}/grub.conf /boot/grub/grub.conf
@@ -136,7 +144,9 @@ if ! [ -e ${SOURCE} ]; then
     cp -a ${INSOURCE_PREPARED}/locale.nopurge /etc/locale.nopurge
     localepurge
     
-    makewhatis -u
+    eselect news read all
+    
+    #makewhatis -u
     eix-update
     
     rm -fr ${INSOURCE_PREPARED}
@@ -146,18 +156,18 @@ if ! [ -e ${SOURCE} ]; then
     
     echo "grepping useless files for extra cleaning later ..."
     #grepping out library files for gcc
-    equery files --filter=obj,conf,doc,man,info gcc | grep -v \.a$ | grep -v \.la$ | grep -v \.so\. > ~/USELESSFILELIST        
-    equery files --filter=obj,conf,doc,man,info portage >> ~/USELESSFILELIST 
-    equery files --filter=obj,conf,doc,man,info automake >> ~/USELESSFILELIST 
-    equery files --filter=obj,conf,doc,man,info autoconf >> ~/USELESSFILELIST 
-    equery files --filter=obj,conf,doc,man,info gentoolkit >> ~/USELESSFILELIST 
-    equery files --filter=obj,conf,doc,man,info texinfo >> ~/USELESSFILELIST 
-    equery files --filter=obj,conf,doc,man,info genkernel >> ~/USELESSFILELIST 
-    equery files --filter=obj,conf,doc,man,info flex >> ~/USELESSFILELIST 
-    equery files --filter=obj,conf,doc,man,info bison >> ~/USELESSFILELIST 
-    equery files --filter=obj,conf,doc,man,info gcc-config >> ~/USELESSFILELIST 
-    equery files --filter=obj,conf,doc,man,info make >> ~/USELESSFILELIST 
-    equery files --filter=obj,conf,doc,man,info m4 >> ~/USELESSFILELIST 
+    equery files --filter=obj,conf,doc,man,info gcc | grep -v \.a$ | grep -v \.la$ | grep -v \.so\. > ~/USELESSFILELIST
+    equery files --filter=obj,conf,doc,man,info portage >> ~/USELESSFILELIST
+    equery files --filter=obj,conf,doc,man,info automake >> ~/USELESSFILELIST
+    equery files --filter=obj,conf,doc,man,info autoconf >> ~/USELESSFILELIST
+    equery files --filter=obj,conf,doc,man,info gentoolkit >> ~/USELESSFILELIST
+    equery files --filter=obj,conf,doc,man,info texinfo >> ~/USELESSFILELIST
+    equery files --filter=obj,conf,doc,man,info genkernel >> ~/USELESSFILELIST
+    equery files --filter=obj,conf,doc,man,info flex >> ~/USELESSFILELIST
+    equery files --filter=obj,conf,doc,man,info bison >> ~/USELESSFILELIST
+    equery files --filter=obj,conf,doc,man,info gcc-config >> ~/USELESSFILELIST
+    equery files --filter=obj,conf,doc,man,info make >> ~/USELESSFILELIST
+    equery files --filter=obj,conf,doc,man,info m4 >> ~/USELESSFILELIST
     equery files --filter=obj,conf,doc,man,info patch >> ~/USELESSFILELIST
     equery files --filter=obj,conf,doc,man,info localepurge >> ~/USELESSFILELIST
     

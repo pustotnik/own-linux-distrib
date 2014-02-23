@@ -28,8 +28,9 @@ CHROOTED
 chroot ${SOURCE} /bin/bash -i -c "genkernel all --menuconfig --no-splash --kernel-config=${INSOURCE_PREPARED}/kernel-config"
 
 chroot ${SOURCE} /bin/bash --login <<CHROOTED
-module-rebuild populate
-module-rebuild rebuild
+#module-rebuild populate
+#module-rebuild rebuild
+emerge -a n @module-rebuild
 
 rm -f /boot/initrd
 rm -f /boot/vmlinuz
