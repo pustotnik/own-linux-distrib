@@ -122,7 +122,7 @@ emerge -a n genkernel dmraid logrotate syslog-ng monit app-admin/mcelog         
     sys-fs/sshfs-fuse sys-fs/xfsprogs sys-apps/hdparm sys-apps/iproute2            \
     sys-fs/dosfstools sys-apps/pv ddrescue gptfdisk lm_sensors mdadm               \
     sys-apps/lshw smartmontools sys-devel/gdb lsof vixie-cron lynx ntop            \
-    dmidecode dstat grub:0 grub:2 ethtool nload
+    dmidecode dstat grub:0 grub:2 ethtool nload linux-firmware
 
 (
     echo "" > /etc/udev/rules.d/80-net-name-slot.rules
