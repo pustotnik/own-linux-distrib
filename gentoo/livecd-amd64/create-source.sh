@@ -19,7 +19,7 @@ if ! [ -e ${SOURCE} ]; then
     cd ${SOURCE} 
     
     if ! [ -f ${LIVECD}/stage3-*.tar.bz2 ]; then
-        wget -c -P ${LIVECD} -r --level=1 -nd -A stage3-amd64*.tar.bz2 -R *nomultilib* http://mirror.yandex.ru/gentoo-distfiles/releases/amd64/current-stage3/
+        wget -c -P ${LIVECD} -r --level=1 -nd -A stage3-amd64*.tar.bz2 -R *nomultilib* http://mirror.yandex.ru/gentoo-distfiles/releases/amd64/autobuilds/current-stage3-amd64/
     fi
     echo "Extracting stage3 files ..."
     if [ ${PV_PATH} ]; then
@@ -80,6 +80,7 @@ if ! [ -e ${SOURCE} ]; then
     cp -a ${INSOURCE_PREPARED}/hostname      /etc/conf.d/hostname
     cp -a ${INSOURCE_PREPARED}/rc.conf       /etc/rc.conf
     cp -a ${INSOURCE_PREPARED}/02locale      /etc/env.d/02locale
+    cp -a ${INSOURCE_PREPARED}/99editor      /etc/env.d/99editor
     cp -a ${INSOURCE_PREPARED}/keymaps       /etc/conf.d/keymaps
     cp -a ${INSOURCE_PREPARED}/consolefont   /etc/conf.d/consolefont
     cp -a ${INSOURCE_PREPARED}/issue         /etc/issue
@@ -106,7 +107,7 @@ if ! [ -e ${SOURCE} ]; then
         net-misc/whois net-misc/ntp sys-block/parted sys-fs/reiserfsprogs      \
         sys-fs/squashfs-tools sys-fs/sshfs-fuse sys-fs/xfsprogs                \
         sys-fs/dosfstools sys-apps/pv ddrescue gptfdisk dmidecode              \
-        mdadm linux-firmware
+        mdadm linux-firmware dev-vcs/bzr
     
     emerge -a n scripts mingetty 
     

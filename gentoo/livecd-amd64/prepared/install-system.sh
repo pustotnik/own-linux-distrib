@@ -163,6 +163,8 @@ GRUBCONF_TEXT+="title=Gentoo Linux ${LINUX_VER_NAME}\n"
 GRUBCONF_TEXT+="root (hd0,${GRUB_PARTNO})\n"
 GRUBCONF_TEXT+="kernel /boot/kernel-genkernel-x86_64-${LINUX_VER_NAME}"
 GRUBCONF_TEXT+=" root=/dev/ram0 init=/linuxrc ramdisk=8192 real_root=UUID=${DISK_UUID}"
+# The most reliable way of disabling the new predictable network interface names
+GRUBCONF_TEXT+=" net.ifnames=0"
 
 GRUBCONF_TEXT+=" vga=791 initrd udev dolvm dodmraid doscsi"
 

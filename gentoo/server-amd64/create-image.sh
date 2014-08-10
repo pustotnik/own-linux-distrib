@@ -23,7 +23,7 @@ mkdir -p ${TARGET}
 cd ${TARGET}
 
 if ! [ -f ${BASEDIR}/stage3-*.tar.bz2 ]; then
-    wget -c -P ${BASEDIR} -r --level=1 -nd -A stage3-amd64*.tar.bz2 -R *nomultilib* http://mirror.yandex.ru/gentoo-distfiles/releases/amd64/current-stage3/
+    wget -c -P ${BASEDIR} -r --level=1 -nd -A stage3-amd64*.tar.bz2 -R *nomultilib* http://mirror.yandex.ru/gentoo-distfiles/releases/amd64/autobuilds/current-stage3-amd64/
 fi
 echo "Extracting stage3 files ..."
 if [ ${PV_PATH} ]; then
@@ -121,8 +121,8 @@ emerge -a n genkernel dmraid logrotate syslog-ng monit app-admin/mcelog         
     net-misc/whois net-misc/ntp sys-block/parted sys-fs/reiserfsprogs              \
     sys-fs/sshfs-fuse sys-fs/xfsprogs sys-apps/hdparm sys-apps/iproute2            \
     sys-fs/dosfstools sys-apps/pv ddrescue gptfdisk lm_sensors mdadm               \
-    sys-apps/lshw smartmontools sys-devel/gdb lsof vixie-cron lynx ntop            \
-    dmidecode dstat grub:0 grub:2 ethtool nload linux-firmware
+    sys-apps/lshw smartmontools sys-devel/gdb lsof vixie-cron lynx                 \
+    dmidecode dstat grub:0 grub:2 ethtool nload linux-firmware dev-vcs/bzr
 
 (
     echo "" > /etc/udev/rules.d/80-net-name-slot.rules
