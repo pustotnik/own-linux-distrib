@@ -106,7 +106,7 @@ locale-gen
 env-update && source /etc/profile
 
 # see http://forums.gentoo.org/viewtopic-t-297935.html
-FEATURES="-sandbox" USE="multilib" emerge -a n gcc portage
+# FEATURES="-sandbox" USE="multilib" emerge -a n gcc portage
 
 emerge -a n sys-kernel/gentoo-sources
 
