@@ -21,6 +21,8 @@ if ! [ -e ${SOURCE} ]; then
     if ! [ -f ${LIVECD}/stage3-*.tar.bz2 ]; then
         wget -c -P ${LIVECD} -r --level=1 -nd -A stage3-amd64*.tar.bz2 -R *nomultilib* http://mirror.yandex.ru/gentoo-distfiles/releases/amd64/autobuilds/current-stage3-amd64/
     fi
+    chmod a+rw ${LIVECD}/stage3-*.tar.bz2
+    
     echo "Extracting stage3 files ..."
     if [ ${PV_PATH} ]; then
         pv ${LIVECD}/stage3-*.tar.bz2 | tar -xvjpf - 1>/dev/null        
@@ -31,6 +33,8 @@ if ! [ -e ${SOURCE} ]; then
     if ! [ -f ${LIVECD}/portage-latest.tar.xz ]; then
         wget -c -P ${LIVECD} http://mirror.yandex.ru/gentoo-distfiles/snapshots/portage-latest.tar.xz
     fi    
+    chmod a+rw ${LIVECD}/portage-latest.tar.xz
+    
     echo "Extracting portage files ..."
     if [ ${PV_PATH} ]; then
         pv ${LIVECD}/portage-latest.tar.xz | tar -xvJpf- -C usr 1>/dev/null
@@ -62,7 +66,7 @@ if ! [ -e ${SOURCE} ]; then
     
     source /etc/profile 
     
-    set -e
+    set -ex
     
     # set the root password for the new environment in case of problems later   
     echo "root:1q2w3e" | chpasswd

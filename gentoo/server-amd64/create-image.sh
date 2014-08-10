@@ -25,6 +25,8 @@ cd ${TARGET}
 if ! [ -f ${BASEDIR}/stage3-*.tar.bz2 ]; then
     wget -c -P ${BASEDIR} -r --level=1 -nd -A stage3-amd64*.tar.bz2 -R *nomultilib* http://mirror.yandex.ru/gentoo-distfiles/releases/amd64/autobuilds/current-stage3-amd64/
 fi
+chmod a+rw ${BASEDIR}/stage3-*.tar.bz2
+
 echo "Extracting stage3 files ..."
 if [ ${PV_PATH} ]; then
     pv ${BASEDIR}/stage3-*.tar.bz2 | tar -xvjpf - 1>/dev/null        
@@ -35,6 +37,8 @@ fi
 if ! [ -f ${BASEDIR}/portage-latest.tar.xz ]; then
     wget -c -P ${BASEDIR} http://mirror.yandex.ru/gentoo-distfiles/snapshots/portage-latest.tar.xz
 fi    
+chmod a+rw ${BASEDIR}/portage-latest.tar.xz
+
 echo "Extracting portage files ..."
 if [ ${PV_PATH} ]; then
     pv ${BASEDIR}/portage-latest.tar.xz | tar -xvJpf- -C usr 1>/dev/null
@@ -65,7 +69,7 @@ chroot ${TARGET} /bin/bash --login <<CHROOTED
 
 source /etc/profile 
 
-set -e
+set -ex
 
 # set the root password for the new environment in case of problems later   
 echo "root:1q2w3e" | chpasswd
