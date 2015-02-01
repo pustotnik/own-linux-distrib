@@ -25,7 +25,7 @@ env-update && source /etc/profile
 cat /proc/mounts > /etc/mtab
 CHROOTED
 
-chroot ${SOURCE} /bin/bash -i -c "genkernel all --menuconfig --no-splash --kernel-config=${INSOURCE_PREPARED}/kernel-config"
+chroot ${SOURCE} /bin/bash -i -c "genkernel all --menuconfig --firmware --busybox --all-ramdisk-modules --no-splash --kernel-config=${INSOURCE_PREPARED}/kernel-config"
 
 chroot ${SOURCE} /bin/bash --login <<CHROOTED
 #module-rebuild populate

@@ -114,11 +114,11 @@ emerge -a n -uDN world
 emerge -a n gentoolkit
 revdep-rebuild -- -a n
 
-emerge -a n genkernel dmraid logrotate syslog-ng monit app-admin/mcelog            \
+emerge -a n genkernel logrotate syslog-ng monit app-admin/mcelog                   \
     eix htop vim sudo mlocate app-arch/dpkg app-arch/lha app-arch/lzip             \
     app-arch/p7zip app-arch/rar app-misc/mc app-misc/screen net-fs/nfs-utils       \
-    net-fs/samba  dev-libs/boost imagemagick layman app-admin/sysstat              \
-    dev-util/intel-ocl-sdk dev-util/strace dev-util/valgrind dev-vcs/git           \
+    dev-libs/boost layman app-admin/sysstat                                        \
+    dev-util/strace dev-util/valgrind dev-vcs/git                                  \
     dev-vcs/mercurial dev-vcs/subversion net-analyzer/tcpreplay net-dns/bind-tools \
     net-dialup/ppp net-analyzer/netcat6 net-analyzer/tcpdump net-libs/libpcap      \
     net-analyzer/traceroute net-misc/dhcpcd net-misc/netkit-telnetd                \

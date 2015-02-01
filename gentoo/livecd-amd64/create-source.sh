@@ -103,7 +103,7 @@ if ! [ -e ${SOURCE} ]; then
     #emerge -a n -e system --exclude glibc --exclude gcc
     #emerge -a n -e world --exclude glibc --exclude gcc
     
-    emerge -a n memtest86+ localepurge genkernel gentoolkit dmraid livecd-tools     \
+    emerge -a n memtest86+ localepurge genkernel gentoolkit livecd-tools       \
         eix htop vim sudo mlocate app-arch/dpkg app-arch/lha app-arch/lzip     \
         app-arch/rar app-misc/mc app-misc/screen net-fs/nfs-utils net-fs/samba \
         net-dialup/ppp net-analyzer/netcat6 net-analyzer/tcpdump               \
@@ -111,7 +111,7 @@ if ! [ -e ${SOURCE} ]; then
         net-misc/whois net-misc/ntp sys-block/parted sys-fs/reiserfsprogs      \
         sys-fs/squashfs-tools sys-fs/sshfs-fuse sys-fs/xfsprogs                \
         sys-fs/dosfstools sys-apps/pv ddrescue gptfdisk dmidecode              \
-        mdadm linux-firmware dev-vcs/bzr
+        mdadm linux-firmware dev-vcs/bzr sys-fs/udftools
     
     emerge -a n scripts mingetty 
     
@@ -127,7 +127,7 @@ if ! [ -e ${SOURCE} ]; then
     
     cat /proc/mounts > /etc/mtab
     
-    genkernel all --no-splash --kernel-config=${INSOURCE_PREPARED}/kernel-config
+    genkernel all --no-splash --firmware --busybox --all-ramdisk-modules --kernel-config=${INSOURCE_PREPARED}/kernel-config
     #module-rebuild populate
     #module-rebuild rebuild
     emerge -a n @module-rebuild
