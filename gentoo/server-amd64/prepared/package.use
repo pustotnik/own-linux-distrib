@@ -4,3 +4,4 @@ app-portage/layman                git mercurial subversion
 media-gfx/imagemagick             graphviz
 media-libs/gd                     truetype jpeg png fontconfig
 sys-boot/grub                     truetype device-mapper
+sys-devel/autogen                 libopts

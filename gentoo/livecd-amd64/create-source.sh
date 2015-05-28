@@ -75,22 +75,25 @@ if ! [ -e ${SOURCE} ]; then
     
     chmod a+r /etc/resolv.conf
     
-    cp -a ${INSOURCE_PREPARED}/make.conf    /etc/portage/make.conf
-    cp -a ${INSOURCE_PREPARED}/package.use  /etc/portage/package.use
-    cp -a ${INSOURCE_PREPARED}/fstab        /etc/fstab
+    [ -e /etc/portage/repos.conf ] || mkdir /etc/portage/repos.conf
     
-    cp -a ${INSOURCE_PREPARED}/localtime     /etc/localtime
-    cp -a ${INSOURCE_PREPARED}/hwclock       /etc/conf.d/hwclock
-    cp -a ${INSOURCE_PREPARED}/hostname      /etc/conf.d/hostname
-    cp -a ${INSOURCE_PREPARED}/rc.conf       /etc/rc.conf
-    cp -a ${INSOURCE_PREPARED}/02locale      /etc/env.d/02locale
-    cp -a ${INSOURCE_PREPARED}/99editor      /etc/env.d/99editor
-    cp -a ${INSOURCE_PREPARED}/keymaps       /etc/conf.d/keymaps
-    cp -a ${INSOURCE_PREPARED}/consolefont   /etc/conf.d/consolefont
-    cp -a ${INSOURCE_PREPARED}/issue         /etc/issue
-    cp -a ${INSOURCE_PREPARED}/inittab       /etc/inittab
+    cp -a ${INSOURCE_PREPARED}/make.conf         /etc/portage/make.conf
+    cp -a ${INSOURCE_PREPARED}/package.use       /etc/portage/package.use
+    cp -a ${INSOURCE_PREPARED}/repos-gentoo.conf /etc/portage/repos.conf/gentoo.conf
+    cp -a ${INSOURCE_PREPARED}/fstab             /etc/fstab
     
-    cp -a ${INSOURCE_PREPARED}/locale.gen /etc/locale.gen
+    cp -a ${INSOURCE_PREPARED}/localtime         /etc/localtime
+    cp -a ${INSOURCE_PREPARED}/hwclock           /etc/conf.d/hwclock
+    cp -a ${INSOURCE_PREPARED}/hostname          /etc/conf.d/hostname
+    cp -a ${INSOURCE_PREPARED}/rc.conf           /etc/rc.conf
+    cp -a ${INSOURCE_PREPARED}/02locale          /etc/env.d/02locale
+    cp -a ${INSOURCE_PREPARED}/99editor          /etc/env.d/99editor
+    cp -a ${INSOURCE_PREPARED}/keymaps           /etc/conf.d/keymaps
+    cp -a ${INSOURCE_PREPARED}/consolefont       /etc/conf.d/consolefont
+    cp -a ${INSOURCE_PREPARED}/issue             /etc/issue
+    cp -a ${INSOURCE_PREPARED}/inittab           /etc/inittab
+    
+    cp -a ${INSOURCE_PREPARED}/locale.gen        /etc/locale.gen
     locale-gen
     
     env-update && source /etc/profile
@@ -139,7 +142,7 @@ if ! [ -e ${SOURCE} ]; then
         make clean
     )
     
-    emerge -a n grub:0
+    emerge -a n grub-static
     emerge -a n grub:2
     
     #rm /boot/grub/menu.lst

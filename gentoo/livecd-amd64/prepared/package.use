@@ -1,2 +1,3 @@
 app-editors/vim     -minimal
 sys-boot/grub       truetype device-mapper
+sys-devel/autogen   libopts

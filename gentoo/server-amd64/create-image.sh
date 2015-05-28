@@ -84,23 +84,26 @@ python-updater -- -a n
 
 emerge -a n dev-util/ccache
 
-cp -a ${INSOURCE_PREPARED}/locale.gen     /etc/locale.gen
-cp -a ${INSOURCE_PREPARED}/make.conf      /etc/portage/make.conf
-cp -a ${INSOURCE_PREPARED}/package.use    /etc/portage/package.use
+[ -e /etc/portage/repos.conf ] || mkdir /etc/portage/repos.conf
 
-cp -a ${INSOURCE_PREPARED}/localtime      /etc/localtime
-cp -a ${INSOURCE_PREPARED}/timezone       /etc/timezone
-cp -a ${INSOURCE_PREPARED}/hwclock        /etc/conf.d/hwclock
-cp -a ${INSOURCE_PREPARED}/hostname       /etc/conf.d/hostname
-cp -a ${INSOURCE_PREPARED}/rc.conf        /etc/rc.conf
-cp -a ${INSOURCE_PREPARED}/02locale       /etc/env.d/02locale
-cp -a ${INSOURCE_PREPARED}/99editor       /etc/env.d/99editor
-cp -a ${INSOURCE_PREPARED}/keymaps        /etc/conf.d/keymaps
-cp -a ${INSOURCE_PREPARED}/consolefont    /etc/conf.d/consolefont
-cp -a ${INSOURCE_PREPARED}/issue          /etc/issue
-cp -a ${INSOURCE_PREPARED}/genkernel.conf /etc/genkernel.conf
+cp -a ${INSOURCE_PREPARED}/locale.gen        /etc/locale.gen
+cp -a ${INSOURCE_PREPARED}/make.conf         /etc/portage/make.conf
+cp -a ${INSOURCE_PREPARED}/package.use       /etc/portage/package.use
+cp -a ${INSOURCE_PREPARED}/repos-gentoo.conf /etc/portage/repos.conf/gentoo.conf
 
-cp -a ${INSOURCE_PREPARED}/locale.gen     /etc/locale.gen
+cp -a ${INSOURCE_PREPARED}/localtime         /etc/localtime
+cp -a ${INSOURCE_PREPARED}/timezone          /etc/timezone
+cp -a ${INSOURCE_PREPARED}/hwclock           /etc/conf.d/hwclock
+cp -a ${INSOURCE_PREPARED}/hostname          /etc/conf.d/hostname
+cp -a ${INSOURCE_PREPARED}/rc.conf           /etc/rc.conf
+cp -a ${INSOURCE_PREPARED}/02locale          /etc/env.d/02locale
+cp -a ${INSOURCE_PREPARED}/99editor          /etc/env.d/99editor
+cp -a ${INSOURCE_PREPARED}/keymaps           /etc/conf.d/keymaps
+cp -a ${INSOURCE_PREPARED}/consolefont       /etc/conf.d/consolefont
+cp -a ${INSOURCE_PREPARED}/issue             /etc/issue
+cp -a ${INSOURCE_PREPARED}/genkernel.conf    /etc/genkernel.conf
+
+cp -a ${INSOURCE_PREPARED}/locale.gen        /etc/locale.gen
 locale-gen
 
 env-update && source /etc/profile
@@ -117,8 +120,8 @@ revdep-rebuild -- -a n
 emerge -a n genkernel logrotate syslog-ng monit app-admin/mcelog                   \
     eix htop vim sudo mlocate app-arch/dpkg app-arch/lha app-arch/lzip             \
     app-arch/p7zip app-arch/rar app-misc/mc app-misc/screen net-fs/nfs-utils       \
-    dev-libs/boost layman app-admin/sysstat                                        \
-    dev-util/strace dev-util/valgrind dev-vcs/git                                  \
+    layman app-admin/sysstat                                                       \
+    dev-util/strace dev-vcs/git                                                    \
     dev-vcs/mercurial dev-vcs/subversion net-analyzer/tcpreplay net-dns/bind-tools \
     net-dialup/ppp net-analyzer/netcat6 net-analyzer/tcpdump net-libs/libpcap      \
     net-analyzer/traceroute net-misc/dhcpcd net-misc/netkit-telnetd                \
@@ -126,7 +129,7 @@ emerge -a n genkernel logrotate syslog-ng monit app-admin/mcelog                
     sys-fs/sshfs-fuse sys-fs/xfsprogs sys-apps/hdparm sys-apps/iproute2            \
     sys-fs/dosfstools sys-apps/pv ddrescue gptfdisk lm_sensors mdadm               \
     sys-apps/lshw smartmontools sys-devel/gdb lsof vixie-cron lynx                 \
-    dmidecode dstat grub:0 grub:2 ethtool nload linux-firmware dev-vcs/bzr
+    dmidecode dstat grub-static grub:2 ethtool nload linux-firmware dev-vcs/bzr
 
 (
     echo "" > /etc/udev/rules.d/80-net-name-slot.rules
