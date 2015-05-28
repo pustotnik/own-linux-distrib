@@ -120,8 +120,8 @@ revdep-rebuild -- -a n
 emerge -a n genkernel logrotate syslog-ng monit app-admin/mcelog                   \
     eix htop vim sudo mlocate app-arch/dpkg app-arch/lha app-arch/lzip             \
     app-arch/p7zip app-arch/rar app-misc/mc app-misc/screen net-fs/nfs-utils       \
-    layman app-admin/sysstat                                                       \
-    dev-util/strace dev-vcs/git                                                    \
+    layman app-admin/sysstat linux-firmware dev-vcs/bzr nload dstat                \
+    dev-util/strace dev-vcs/git dmidecode ethtool                                  \
     dev-vcs/mercurial dev-vcs/subversion net-analyzer/tcpreplay net-dns/bind-tools \
     net-dialup/ppp net-analyzer/netcat6 net-analyzer/tcpdump net-libs/libpcap      \
     net-analyzer/traceroute net-misc/dhcpcd net-misc/netkit-telnetd                \
@@ -129,7 +129,7 @@ emerge -a n genkernel logrotate syslog-ng monit app-admin/mcelog                
     sys-fs/sshfs-fuse sys-fs/xfsprogs sys-apps/hdparm sys-apps/iproute2            \
     sys-fs/dosfstools sys-apps/pv ddrescue gptfdisk lm_sensors mdadm               \
     sys-apps/lshw smartmontools sys-devel/gdb lsof vixie-cron lynx                 \
-    dmidecode dstat grub-static grub:2 ethtool nload linux-firmware dev-vcs/bzr
+    grub-static grub:2
 
 (
     echo "" > /etc/udev/rules.d/80-net-name-slot.rules
