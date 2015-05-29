@@ -70,8 +70,9 @@ read USERREPLY
 #dns_servers_eth0="192.168.0.1 192.168.0.100"
 ################################################
 
-PARTNO=1
-DEVPART="${DEV}${PARTNO}"
+BIOSGRUB_PARTNO=1
+SYS_PARTNO=2
+DEVPART="${DEV}${SYS_PARTNO}"
 TARGET_MOUNT_POINT="/mnt/gentoo"
 
 
@@ -93,8 +94,12 @@ sgdisk -o ${DEV}
 echo "Creating new GPT partition"
 BEGINSECTOR=`sgdisk -F ${DEV}`
 ENDSECTOR=`sgdisk -E ${DEV}`
-sgdisk -n ${PARTNO}:${BEGINSECTOR}:${ENDSECTOR} ${DEV}
-sgdisk -t ${PARTNO}:8300
+#MIDDLESECTOR=$(($BEGINSECTOR + 2013))
+MIDDLESECTOR=4096
+sgdisk -n${SYS_PARTNO}:${MIDDLESECTOR}:${ENDSECTOR} ${DEV} -t${SYS_PARTNO}:8300
+# For grub2 with GPT needs special boot partition
+ENDSECTOR=`sgdisk -E ${DEV}`
+sgdisk -n${BIOSGRUB_PARTNO}:${BEGINSECTOR}:${ENDSECTOR} ${DEV} -t${BIOSGRUB_PARTNO}:ef02
 
 echo "Creating filesystem"
 if [ "${FSTYPE}" == "reiserfs" ]; then
@@ -137,68 +142,70 @@ FSTAB_TEXT+="\n"
 echo -e ${FSTAB_TEXT} > ${TARGET_MOUNT_POINT}/etc/fstab
 
 chroot ${TARGET_MOUNT_POINT} /bin/bash --login <<CHROOTED
-    env-update && source /etc/profile    
+    env-update && source /etc/profile
+    [ -e /lib64/rc/cache ] || mkdir -p /lib64/rc/cache
 CHROOTED
 
 echo "Installing GRUB"
 
-GRUB_PARTNO=`expr ${PARTNO} - 1`
+grub2-install --boot-directory=${TARGET_MOUNT_POINT}/boot ${DEV}
+mount -t proc proc    ${TARGET_MOUNT_POINT}/proc
+mount --rbind /sys    ${TARGET_MOUNT_POINT}/sys
+mount --rbind /dev    ${TARGET_MOUNT_POINT}/dev
+chroot ${TARGET_MOUNT_POINT} /bin/bash --login <<CHROOTED
+    grub2-mkconfig -o /boot/grub/grub.cfg
+CHROOTED
+umount -l ${TARGET_MOUNT_POINT}/sys
+umount -l ${TARGET_MOUNT_POINT}/dev{/shm,/pts,}
+umount -l ${TARGET_MOUNT_POINT}/proc
 
-LINUX_VER_PREFIX="linux-"
-LINUX_VER_PREFIX_LEN=${#LINUX_VER_PREFIX}
-LINUX_VER_NAME="${TARGET_MOUNT_POINT}/usr/src/linux"
-LINUX_VER_NAME=`realpath ${LINUX_VER_NAME}`
-LINUX_VER_NAME=`basename ${LINUX_VER_NAME}`
-LINUX_VER_NAME=${LINUX_VER_NAME:LINUX_VER_PREFIX_LEN}
+################################
 
-GRUBCONF_TEXT="\n"
-GRUBCONF_TEXT+="default 0\n"
-GRUBCONF_TEXT+="timeout 3\n"
-GRUBCONF_TEXT+="\n"
-GRUBCONF_TEXT+="# Nice, fat splash-image to spice things up :)\n"
-GRUBCONF_TEXT+="# Comment out if you don't have a graphics card installed\n"
-GRUBCONF_TEXT+="splashimage=(hd0,${GRUB_PARTNO})/boot/grub/splash.xpm.gz\n"
-GRUBCONF_TEXT+="\n\n"
-GRUBCONF_TEXT+="title=Gentoo Linux ${LINUX_VER_NAME}\n"
-GRUBCONF_TEXT+="root (hd0,${GRUB_PARTNO})\n"
-GRUBCONF_TEXT+="kernel /boot/kernel-genkernel-x86_64-${LINUX_VER_NAME}"
-GRUBCONF_TEXT+=" root=/dev/ram0 init=/linuxrc ramdisk=8192 real_root=UUID=${DISK_UUID}"
-# The most reliable way of disabling the new predictable network interface names
-GRUBCONF_TEXT+=" net.ifnames=0"
-
-GRUBCONF_TEXT+=" vga=791 initrd udev dolvm dodmraid doscsi"
-
-# for HP SmartArray
-#GRUBCONF_TEXT+=" cciss.cciss_allow_any=1"
-GRUBCONF_TEXT+="\n"
-GRUBCONF_TEXT+="initrd /boot/initramfs-genkernel-x86_64-${LINUX_VER_NAME}\n"
-GRUBCONF_TEXT+="\n"
-echo -e ${GRUBCONF_TEXT} > ${TARGET_MOUNT_POINT}/boot/grub/grub.conf
-
-grub-install --recheck --no-floppy --root-directory=${TARGET_MOUNT_POINT}/boot ${DEV}
-
-#TODO: add check target device is /dev/vdX and create for this case map file
-
-# Sometimes grub can not map the selected device (for virtio with KVM for example)
-GRUB_DEVICE_MAPFILE=${TARGET_MOUNT_POINT}/boot/grub/device.map
-GRUB_DEVICE_FOUND=`grep ${DEV} ${GRUB_DEVICE_MAPFILE} | wc -l`
-if [ "${GRUB_DEVICE_FOUND}" == "0" ]; then
-    # TODO: check if hd0 already exists
-    echo "(hd0)   ${DEV}" >> ${GRUB_DEVICE_MAPFILE}
-fi
-grub-install --no-floppy --root-directory=${TARGET_MOUNT_POINT}/boot ${DEV}
-
-# grub2-install grub2-install --boot-directory=${TARGET_MOUNT_POINT}/boot ${DEV}
+# GRUB_PARTNO=`expr ${SYS_PARTNO} - 1`
 # 
-# mount -t proc proc    ${TARGET_MOUNT_POINT}/proc
-# mount --rbind /sys    ${TARGET_MOUNT_POINT}/sys
-# mount --rbind /dev    ${TARGET_MOUNT_POINT}/dev
-# chroot ${TARGET_MOUNT_POINT} /bin/bash --login <<CHROOTED
-#     grub2-mkconfig -o /boot/grub/grub.cfg
-# CHROOTED
-# umount -l ${TARGET_MOUNT_POINT}/sys
-# umount -l ${TARGET_MOUNT_POINT}/dev{/shm,/pts,}
-# umount -l ${TARGET_MOUNT_POINT}/proc
+# LINUX_VER_PREFIX="linux-"
+# LINUX_VER_PREFIX_LEN=${#LINUX_VER_PREFIX}
+# LINUX_VER_NAME="${TARGET_MOUNT_POINT}/usr/src/linux"
+# LINUX_VER_NAME=`realpath ${LINUX_VER_NAME}`
+# LINUX_VER_NAME=`basename ${LINUX_VER_NAME}`
+# LINUX_VER_NAME=${LINUX_VER_NAME:LINUX_VER_PREFIX_LEN}
+# 
+# GRUBCONF_TEXT="\n"
+# GRUBCONF_TEXT+="default 0\n"
+# GRUBCONF_TEXT+="timeout 3\n"
+# GRUBCONF_TEXT+="\n"
+# GRUBCONF_TEXT+="# Nice, fat splash-image to spice things up :)\n"
+# GRUBCONF_TEXT+="# Comment out if you don't have a graphics card installed\n"
+# GRUBCONF_TEXT+="splashimage=(hd0,${GRUB_PARTNO})/boot/grub/splash.xpm.gz\n"
+# GRUBCONF_TEXT+="\n\n"
+# GRUBCONF_TEXT+="title=Gentoo Linux ${LINUX_VER_NAME}\n"
+# GRUBCONF_TEXT+="root (hd0,${GRUB_PARTNO})\n"
+# GRUBCONF_TEXT+="kernel /boot/kernel-genkernel-x86_64-${LINUX_VER_NAME}"
+# GRUBCONF_TEXT+=" root=/dev/ram0 init=/linuxrc ramdisk=8192 real_root=UUID=${DISK_UUID}"
+# # The most reliable way of disabling the new predictable network interface names
+# GRUBCONF_TEXT+=" net.ifnames=0"
+# 
+# GRUBCONF_TEXT+=" vga=791 initrd udev dolvm dodmraid doscsi"
+# 
+# # for HP SmartArray
+# #GRUBCONF_TEXT+=" cciss.cciss_allow_any=1"
+# GRUBCONF_TEXT+="\n"
+# GRUBCONF_TEXT+="initrd /boot/initramfs-genkernel-x86_64-${LINUX_VER_NAME}\n"
+# GRUBCONF_TEXT+="\n"
+# echo -e ${GRUBCONF_TEXT} > ${TARGET_MOUNT_POINT}/boot/grub/grub.conf
+# 
+# grub-install --recheck --no-floppy --root-directory=${TARGET_MOUNT_POINT}/boot ${DEV}
+# 
+# #TODO: add check target device is /dev/vdX and create for this case map file
+# 
+# # Sometimes grub can not map the selected device (for virtio with KVM for example)
+# GRUB_DEVICE_MAPFILE=${TARGET_MOUNT_POINT}/boot/grub/device.map
+# GRUB_DEVICE_FOUND=`grep ${DEV} ${GRUB_DEVICE_MAPFILE} | wc -l`
+# if [ "${GRUB_DEVICE_FOUND}" == "0" ]; then
+#     # TODO: check if hd0 already exists
+#     echo "(hd0)   ${DEV}" >> ${GRUB_DEVICE_MAPFILE}
+# fi
+# grub-install --no-floppy --root-directory=${TARGET_MOUNT_POINT}/boot ${DEV}
 
 umount ${TARGET_MOUNT_POINT}
 

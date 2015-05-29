@@ -102,6 +102,7 @@ cp -a ${INSOURCE_PREPARED}/keymaps           /etc/conf.d/keymaps
 cp -a ${INSOURCE_PREPARED}/consolefont       /etc/conf.d/consolefont
 cp -a ${INSOURCE_PREPARED}/issue             /etc/issue
 cp -a ${INSOURCE_PREPARED}/genkernel.conf    /etc/genkernel.conf
+cp -a ${INSOURCE_PREPARED}/grub2.conf        /etc/default/grub
 
 cp -a ${INSOURCE_PREPARED}/locale.gen        /etc/locale.gen
 locale-gen
