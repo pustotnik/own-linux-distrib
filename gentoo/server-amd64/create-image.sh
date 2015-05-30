@@ -84,7 +84,10 @@ python-updater -- -a n
 
 emerge -a n dev-util/ccache
 
-[ -e /etc/portage/repos.conf ] || mkdir /etc/portage/repos.conf
+[ -e /etc/portage/package.keywords ] || mkdir -p /etc/portage/package.keywords
+cp -a ${INSOURCE_PREPARED}/unmask-gentoo-sources   /etc/portage/package.keywords/gentoo-sources
+
+[ -e /etc/portage/repos.conf ] || mkdir -p /etc/portage/repos.conf
 
 cp -a ${INSOURCE_PREPARED}/locale.gen        /etc/locale.gen
 cp -a ${INSOURCE_PREPARED}/make.conf         /etc/portage/make.conf

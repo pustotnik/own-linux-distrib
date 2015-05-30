@@ -75,6 +75,9 @@ if ! [ -e ${SOURCE} ]; then
     
     chmod a+r /etc/resolv.conf
     
+    [ -e /etc/portage/package.keywords ] || mkdir -p /etc/portage/package.keywords
+    cp -a ${INSOURCE_PREPARED}/unmask-gentoo-sources   /etc/portage/package.keywords/gentoo-sources
+    
     [ -e /etc/portage/repos.conf ] || mkdir /etc/portage/repos.conf
     
     cp -a ${INSOURCE_PREPARED}/make.conf         /etc/portage/make.conf
