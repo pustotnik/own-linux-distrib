@@ -4,35 +4,65 @@
 ####### USER INPUT #############################
 echo "Configuring installation. For default values press ENTER."
 echo ""
-echo "Target device for install."
-echo "ATTENTION!!! ALL DATA WILL BE LOST ON THIS DEVICE!"
 
-echo -n "Select target device for install (by default '/dev/sda'): "
-read DEV
-if [ "${DEV}" == "" ]; then
-    DEV="/dev/sda"
-fi
+echo -n "Select installation mode. Valid variants: device, partition (by default 'device'): "
+read INSTALLMODE
 
-if ! [ -e ${DEV} ]; then
-    echo "${DEV} is not exists, exit"
-    exit 1
-fi
+if [ "${INSTALLMODE}" == "device" ]; then
 
-if ! [ -b ${DEV} ]; then
-    echo "${DEV} is not a block device, exit"
-    exit 1
-fi
+    echo "Target device for install."
+    echo "ATTENTION!!! ALL DATA WILL BE LOST ON THIS DEVICE!"
+
+    echo -n "Select target device for install (by default '/dev/sda'): "
+    read DEV
+    if [ "${DEV}" == "" ]; then
+        DEV="/dev/sda"
+    fi
+
+    if ! [ -e ${DEV} ]; then
+        echo "${DEV} is not exists, exit"
+        exit 1
+    fi
+
+    if ! [ -b ${DEV} ]; then
+        echo "${DEV} is not a block device, exit"
+        exit 1
+    fi
 
 
-echo -n "Select filesystem. Valid variants: reiserfs, ext4, xfs (by default 'reiserfs'): "
-read FSTYPE
-if [ "${FSTYPE}" == "" ]; then
-    FSTYPE="reiserfs"
-fi
+    echo -n "Select filesystem. Valid variants: reiserfs, ext4, xfs (by default 'reiserfs'): "
+    read FSTYPE
+    if [ "${FSTYPE}" == "" ]; then
+        FSTYPE="reiserfs"
+    fi
 
-if [ "${FSTYPE}" != "reiserfs" ] && [ "${FSTYPE}" != "ext4" ] && [ "${FSTYPE}" != "xfs" ]; then
-    echo "Filesystem ${FSTYPE} is not supported, exit"
-    exit 1
+    if [ "${FSTYPE}" != "reiserfs" ] && [ "${FSTYPE}" != "ext4" ] && [ "${FSTYPE}" != "xfs" ]; then
+        echo "Filesystem ${FSTYPE} is not supported, exit"
+        exit 1
+    fi
+else
+    echo -n "Select target device for bootloader (by default '/dev/sda'): "
+    read DEV
+    if [ "${DEV}" == "" ]; then
+        DEV="/dev/sda"
+    fi
+
+    if ! [ -e ${DEV} ]; then
+        echo "${DEV} is not exists, exit"
+        exit 1
+    fi
+
+    if ! [ -b ${DEV} ]; then
+        echo "${DEV} is not a block device, exit"
+        exit 1
+    fi
+    
+    echo -n "Select device partition for install (by default '/dev/sda1'): "
+    read DEVPART
+    if [ "${DEVPART}" == "" ]; then
+        echo "Partition for install is empty, exit"
+        exit 1
+    fi
 fi
 
 echo -n "Input hostname (by default 'gentoo-server'): "
@@ -49,8 +79,14 @@ else
     USE_OARPROXY="no"
 fi
 
-echo "Selected device:     ${DEV}"
-echo "Selected filesystem: ${FSTYPE}"
+# Confirmation
+if [ "${INSTALLMODE}" == "device" ]; then
+    echo "Selected device:     ${DEV}"
+    echo "Selected filesystem: ${FSTYPE}"
+else
+    echo "Selected device for bootloader: ${DEV}"
+    echo "Selected partition for install: ${DEVPART}"
+fi
 echo "Selected hostname:   ${HOSTNAME}"
 echo "Using oarproxy:      ${USE_OARPROXY}"
 echo -n "Press any key for continue or Ctrl+C for abort"
@@ -70,47 +106,52 @@ read USERREPLY
 #dns_servers_eth0="192.168.0.1 192.168.0.100"
 ################################################
 
-BIOSGRUB_PARTNO=1
-SYS_PARTNO=2
-DEVPART="${DEV}${SYS_PARTNO}"
 TARGET_MOUNT_POINT="/mnt/gentoo"
 
+if [ "${INSTALLMODE}" == "device" ]; then
+    BIOSGRUB_PARTNO=1
+    SYS_PARTNO=2
+    DEVPART="${DEV}${SYS_PARTNO}"
 
-FS_MOUNT_OPTS="defaults,relatime,nodiratime"
-if [ "${FSTYPE}" == "reiserfs" ]; then
-    FS_MOUNT_OPTS+=",notail"
-elif [ "${FSTYPE}" == "xfs" ]; then
-    FS_MOUNT_OPTS+=",nobarrier,logbufs=8,logbsize=256k,osyncisdsync"
-elif [ "${FSTYPE}" == "ext4" ]; then
-    FS_MOUNT_OPTS+=",nobarrier,async"
+    echo "Cleaning the GPT and MBR data structures"
+    # Zap (destroy) the GPT and MBR data structures
+    sgdisk -Z ${DEV}
+    # Clear out all partition data
+    sgdisk -o ${DEV}
+
+    echo "Creating new GPT partition"
+    BEGINSECTOR=`sgdisk -F ${DEV}`
+    ENDSECTOR=`sgdisk -E ${DEV}`
+    #MIDDLESECTOR=$(($BEGINSECTOR + 2013))
+    MIDDLESECTOR=4096
+    sgdisk -n${SYS_PARTNO}:${MIDDLESECTOR}:${ENDSECTOR} ${DEV} -t${SYS_PARTNO}:8300
+    # For grub2 with GPT needs special boot partition
+    ENDSECTOR=`sgdisk -E ${DEV}`
+    sgdisk -n${BIOSGRUB_PARTNO}:${BEGINSECTOR}:${ENDSECTOR} ${DEV} -t${BIOSGRUB_PARTNO}:ef02
+
+    echo "Creating filesystem"
+    if [ "${FSTYPE}" == "reiserfs" ]; then
+        mkfs.reiserfs -q ${DEVPART}
+    elif [ "${FSTYPE}" == "xfs" ]; then
+        mkfs.xfs -f ${DEVPART}
+    elif [ "${FSTYPE}" == "ext4" ]; then
+        mkfs.ext4 ${DEVPART}
+    fi
+    
+    mount ${DEVPART} ${TARGET_MOUNT_POINT}
+else
+
+    mount ${DEVPART} ${TARGET_MOUNT_POINT}
+    MOUNTLINE=`cat /proc/mounts |grep ${DEVPART}|grep ${TARGET_MOUNT_POINT}`
+    FSTYPE=( $MOUNTLINE )
+    FSTYPE=${FSTYPE[2]}
+    
+    if [ "${FSTYPE}" != "reiserfs" ] && [ "${FSTYPE}" != "ext4" ] && [ "${FSTYPE}" != "xfs" ]; then
+        echo "Filesystem ${FSTYPE} is not supported, exit"
+        umount ${TARGET_MOUNT_POINT}
+        exit 1
+    fi
 fi
-
-echo "Cleaning the GPT and MBR data structures"
-# Zap (destroy) the GPT and MBR data structures
-sgdisk -Z ${DEV}
-# Clear out all partition data
-sgdisk -o ${DEV}
-
-echo "Creating new GPT partition"
-BEGINSECTOR=`sgdisk -F ${DEV}`
-ENDSECTOR=`sgdisk -E ${DEV}`
-#MIDDLESECTOR=$(($BEGINSECTOR + 2013))
-MIDDLESECTOR=4096
-sgdisk -n${SYS_PARTNO}:${MIDDLESECTOR}:${ENDSECTOR} ${DEV} -t${SYS_PARTNO}:8300
-# For grub2 with GPT needs special boot partition
-ENDSECTOR=`sgdisk -E ${DEV}`
-sgdisk -n${BIOSGRUB_PARTNO}:${BEGINSECTOR}:${ENDSECTOR} ${DEV} -t${BIOSGRUB_PARTNO}:ef02
-
-echo "Creating filesystem"
-if [ "${FSTYPE}" == "reiserfs" ]; then
-    mkfs.reiserfs -q ${DEVPART}
-elif [ "${FSTYPE}" == "xfs" ]; then
-    mkfs.xfs -f ${DEVPART}
-elif [ "${FSTYPE}" == "ext4" ]; then
-    mkfs.ext4 ${DEVPART}
-fi
-
-mount ${DEVPART} ${TARGET_MOUNT_POINT}
 
 echo "Copying system, please wait ..."
 pv /mnt/livecd/files/gentoo-server.tar.xz | tar -xvJpf- -C ${TARGET_MOUNT_POINT} 1>/dev/null
@@ -132,6 +173,15 @@ DISK_UUID=`blkid -s UUID -o value ${DEVPART}`
 
 echo "Fixing /etc/fstab"
 FS_MOUNT_DEV="/dev/disk/by-uuid/${DISK_UUID}"
+
+FS_MOUNT_OPTS="defaults,relatime,nodiratime"
+if [ "${FSTYPE}" == "reiserfs" ]; then
+    FS_MOUNT_OPTS+=",notail"
+elif [ "${FSTYPE}" == "xfs" ]; then
+    FS_MOUNT_OPTS+=",nobarrier,logbufs=8,logbsize=256k,osyncisdsync"
+elif [ "${FSTYPE}" == "ext4" ]; then
+    FS_MOUNT_OPTS+=",nobarrier,async"
+fi
 
 FSTAB_TEXT=""
 FSTAB_TEXT+="${FS_MOUNT_DEV}   /           ${FSTYPE}       ${FS_MOUNT_OPTS}      0 1\n"
