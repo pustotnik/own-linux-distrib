@@ -161,6 +161,8 @@ if ! [ -e ${SOURCE} ]; then
     
     rm -fr ${INSOURCE_PREPARED}
     
+    emerge -a n -C localepurge
+    
     echo "updatedb ..."
     updatedb
     
@@ -179,7 +181,7 @@ if ! [ -e ${SOURCE} ]; then
     equery files --filter=obj,conf,doc,man,info make >> ~/USELESSFILELIST
     equery files --filter=obj,conf,doc,man,info m4 >> ~/USELESSFILELIST
     equery files --filter=obj,conf,doc,man,info patch >> ~/USELESSFILELIST
-    equery files --filter=obj,conf,doc,man,info localepurge >> ~/USELESSFILELIST
+    #equery files --filter=obj,conf,doc,man,info localepurge >> ~/USELESSFILELIST
     
 CHROOTED
     
