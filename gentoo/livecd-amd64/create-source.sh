@@ -110,7 +110,7 @@ if ! [ -e ${SOURCE} ]; then
     #emerge -a n -e world --exclude glibc --exclude gcc
     
     emerge -a n memtest86+ localepurge genkernel gentoolkit livecd-tools       \
-        eix htop vim sudo mlocate app-arch/dpkg app-arch/lha app-arch/lzip     \
+        htop vim sudo mlocate app-arch/dpkg app-arch/lha app-arch/lzip         \
         app-arch/rar app-misc/mc app-misc/screen net-fs/nfs-utils net-fs/samba \
         net-dialup/ppp net-analyzer/netcat6 net-analyzer/tcpdump               \
         net-analyzer/traceroute net-misc/dhcpcd net-misc/netkit-telnetd        \
@@ -158,7 +158,6 @@ if ! [ -e ${SOURCE} ]; then
     eselect news read all
     
     #makewhatis -u
-    eix-update
     
     rm -fr ${INSOURCE_PREPARED}
     

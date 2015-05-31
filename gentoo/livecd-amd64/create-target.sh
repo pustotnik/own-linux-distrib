@@ -66,6 +66,8 @@ if ! [ -e ${TARGET_SOURCE} ]; then
     rm -fr ${TARGET_SOURCE}/usr/portage
     rm -fr ${TARGET_SOURCE}/etc/portage
     rm -fr ${TARGET_SOURCE}/usr/src
+    rm -fr ${TARGET_SOURCE}/usr/share/doc
+    rm -fr ${TARGET_SOURCE}/usr/include/*
     rm -fr ${TARGET_SOURCE}/root/*
     rm -fr ${TARGET_SOURCE}/tmp/*
 
