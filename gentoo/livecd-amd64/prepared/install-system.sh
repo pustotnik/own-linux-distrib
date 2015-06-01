@@ -8,6 +8,10 @@ echo ""
 echo -n "Select installation mode. Valid variants: device, partition (by default 'device'): "
 read INSTALLMODE
 
+if [ "${INSTALLMODE}" == "" ]; then
+    INSTALLMODE="device"
+fi
+
 if [ "${INSTALLMODE}" == "device" ]; then
 
     echo "Target device for install."
