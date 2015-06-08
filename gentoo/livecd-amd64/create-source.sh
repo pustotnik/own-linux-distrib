@@ -117,7 +117,7 @@ if ! [ -e ${SOURCE} ]; then
         net-misc/whois net-misc/ntp sys-block/parted sys-fs/reiserfsprogs      \
         sys-fs/squashfs-tools sys-fs/sshfs-fuse sys-fs/xfsprogs                \
         sys-fs/dosfstools sys-apps/pv ddrescue gptfdisk dmidecode              \
-        mdadm linux-firmware dev-vcs/bzr sys-fs/udftools
+        mdadm linux-firmware dev-vcs/bzr sys-fs/udftools pciutils
     
     emerge -a n scripts mingetty 
     
